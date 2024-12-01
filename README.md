@@ -152,4 +152,29 @@ for coord in households_coords:
 m.save("households_map.html")
 m
 ````
-![Households Map]()
+![Households Map](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Households_.png)
+
+### 3.3 Facility Locations 
+We are going to add the facility locations, in this case we used a csv with some predetermined facility locations. 
+#### 3.3.1 
+This code loads a CSV file containing grocery store data and checks its structure to ensure the latitude and longitude columns are presen and are in the correct format for the model. 
+```python
+# Load the CSV file
+grocery_df = pd.read_csv("C:/GUS5031/Restaurant/grocery_store.csv")
+
+# Ensure the latitude and longitude columns are present
+print(grocery_df.head())
+````
+![Structure of grocery stores]()
+#### 3.3.2 
+
+```python
+groceries_gdf = gpd.GeoDataFrame(
+    grocery_df,
+    geometry=gpd.points_from_xy(grocery_df['POINT_X'], grocery_df['POINT_Y']),
+    crs="EPSG:2272"  # Projected CRS (update if necessary)
+)
+
+# Check the CRS
+print("Original CRS:", groceries_gdf.crs)
+````
