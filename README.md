@@ -81,5 +81,24 @@ print(gdf.crs)
 
 ````
 #### The map below shows low income tracts, in Philadelphia 
+![Area of Interest in Philadelphia](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Area%20of%20interest_Phily.png)
 
+### 3.0 Adding Demand Points (Households) and Visualise using folium 
+
+The next step is to generate the target households locations within the defined area of interest and extract their coordinates for further analysis. 
+Using the ***simulated_geo_points function***, the households are randomly placed within the geographic boundaries of the region (gdf). These points are then converted into a list of [longitude, latitude] coordinates for easier processing and integration into further calculations. ***NB*** Also We need to make sure the CRS is in the geograpjhic coordinate system and as such we print the first five. 
+
+```python
+NUM_HOUSEHOLDS = 200
+
+# Generate the households as random points within the region
+households = simulated_geo_points(gdf, needed=NUM_HOUSEHOLDS, seed=0)
+
+# Convert households to a list of coordinates
+households_coords = households.geometry.map(lambda pt: [pt.x, pt.y]).to_list()
+
+# Check the first few coordinates
+print(households_coords[:5])
+````
+![Coordinates format](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Area%20of%20interest_Phily.png)
 
