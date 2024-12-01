@@ -196,3 +196,21 @@ This step extracts the latitude and longitude coordinates of grocery store locat
 grocery_coords = groceries_gdf.geometry.map(lambda pt: [pt.x, pt.y]).to_list()
 print("First few grocery coordinates:", grocery_coords[:5])
 ````
+[Extracted Coordinates system](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Grocer_coord_projected.png)
+
+#### 3.3.5  Visualisation Facility Locations
+This step enhances the interactive map by visually identifying grocery store locations with easily recognizable icons. It allows users to explore the geographic distribution of stores and interact with their details. The resulting map is saved as an HTML file for further use or sharing.
+```python
+# Add grocery stores to the map as green points
+# Add grocery stores to the map with shopping cart icons
+for i, coord in enumerate(grocery_coords):
+    folium.Marker(
+        location=[coord[1], coord[0]],  # Latitude, longitude
+        icon=folium.Icon(icon="shopping-cart", prefix="fa", color="green"),
+        popup=f"Grocery Store {i}"
+    ).add_to(m)
+
+# Save and display the map
+m.save("households_and_groceries_map_with_icons.html")
+m
+````
