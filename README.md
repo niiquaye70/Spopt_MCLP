@@ -100,5 +100,31 @@ households_coords = households.geometry.map(lambda pt: [pt.x, pt.y]).to_list()
 # Check the first few coordinates
 print(households_coords[:5])
 ````
-![Coordinates format](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Area%20of%20interest_Phily.png)
+![Coordinates format](https://github.com/niiquaye70/Spopt_MCLP/blob/main/coord_nates%20verify.png)
 
+#### 3.1 Creating a Center of the Region of Interest 
+Moving on, we calculate the  calculates the center of the geographic region to use as the initial view for an interactive map. This calculated center point is essential for centering the map appropriately, ensuring the region of interest is fully visible when visualizing the data. 
+
+***gdf.geometry.centroid***: Calculates the centroid of each geometry in the GeoDataFrame.
+***y.mean() and x.mean()***: Computes the mean latitude and longitude of all centroids to determine the central point of the map
+```python
+# Create a base map centered on the geometry
+region_center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
+````
+#### 3.2 Creating a Basemap and Visualise households within the Region of Interest 
+Moving on we use folium.Map to creates an interactive map centered on the defined geographic region and overlays the region's boundary. 
+zoom_start=14 sets the initial zoom level for the map.
+tiles="cartodbpositron" applies a clean and modern tile style for visualization.
+
+```python
+# Create a base map centered on the geometry
+region_center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
+m = folium.Map(location=region_center, zoom_start=14, tiles="cartodbpositron")
+
+# Convert the geodataframe's geometry to GeoJSON format. 
+folium.GeoJson(
+    data=gdf.geometry.to_json(),
+    name="Region Boundary",
+    style_function=lambda x: {"color": "blue", "fillColor": "lightblue"}
+).add_to(m)
+````
