@@ -38,7 +38,9 @@ folium   : 0.18.0
 geopandas: 1.0.1
 numpy    : 1.26.2
  
-### Importing Necessary Packages
+### 1.0 Importing Necessary Packages
+
+## Importing Necessary Packages
 
 ```python
 # Importing necessary packages
@@ -55,4 +57,25 @@ from shapely.geometry import shape, Point
 import spopt
 import numpy as np
 import matplotlib.pyplot as plt
+
+```` 
+
+
+### 2.0 Load shapefile of the region of interest
+The original documentation used json file, but in this tutorial I used a shapefile, based on the results with a regional analysis performed with *******.
+
+## Load and Visualize Areas of Interest
+
+```python
+# Load areas of interest (shapefile)
+pf_region = "C:/GUS5031/pf_region.shp"
+
+#read as as Geodataframe(gdf)
+gdf = gpd.read_file(pf_region)
+
+# Visualize the low-income region
+gdf.plot()
+plt.show()
+
+print(gdf.crs)
 
