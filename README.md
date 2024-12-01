@@ -128,3 +128,4 @@ folium.GeoJson(
     style_function=lambda x: {"color": "blue", "fillColor": "lightblue"}
 ).add_to(m)
 ````
+![Base Map]()
