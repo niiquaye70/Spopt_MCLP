@@ -128,4 +128,28 @@ folium.GeoJson(
     style_function=lambda x: {"color": "blue", "fillColor": "lightblue"}
 ).add_to(m)
 ````
-![Base Map]()
+![Base Map](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Base_Map.png)
+
+#### 3.2.1 Adding Household Locations to the interactuve map 
+We also need to  add the household locations to the interactive map as points to represent demand points visually. The for loop Iterates through the list of household coordinates. 
+
+```python
+# Add households as blue points
+for coord in households_coords:
+    folium.CircleMarker(
+        location=[coord[1], coord[0]],
+        radius=3,
+        fill=True,
+        fill_opacity=1,
+        color="cornflowerblue",
+        popup="Household"
+    ).add_to(m)
+````
+
+#### 3.2.2  Save and display the map
+```python
+# Save and display the map
+m.save("households_map.html")
+m
+````
+![Households Map]()
