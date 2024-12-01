@@ -254,3 +254,42 @@ print(cost_matrix)
 print("Cost matrix shape:", cost_matrix.shape)  
 ````
 ***We used a 2D numpy array to hold the values of travel time for each household. there are 200 households and 13 grocery stores, the matrix will be of shape (200, 10)***
+
+##### Cost Matrix Output and Shape
+The following image shows the output of the cost matrix, including its values and shape:
+![Cost Matrix and Shape](https://github.com/niiquaye70/Spopt_MCLP/blob/main/matrix_output%20and%20shape.png)
+
+### 3.5 Running the Maximize  Covering Location Problem 
+```python
+# Set MCLP parameters
+SERVICE_RADIUS = 300  # Maximum acceptable service time (e.g., 5 minutes in seconds)
+P_FACILITIES = 3      # Number of grocery stores to site
+my_weights = np.ones((1, len(households_coords)), dtype=int)  # Equal weights for households
+````
+#### 3.5 1 Initialize the solver
+We initializes the Maximal Covering Location Problem (MCLP) solve to determine the optimal placement of facilities to maximize the coverage of demand points (e.g., households). 
+If not locally available download: and extact into local drive: solver = pulp.COIN_CMD(path="******cbc.exe", msg=False)
+```python
+# Initialize and solve the MCLP with parameters 
+solver = pulp.COIN_CMD(path= "C:/cbc/bin/cbc.exe",msg=False)
+mclp = MCLP.from_cost_matrix(cost_matrix, wght , SERVICE_RADIUS, p_facilities=P_FACILITIES)
+mclp = mclp.solve(solver)
+````
+#### 3.5.2  Retrieving and Printing Results : objective value and percentage coverage 
+We are first going to retrieve the objective value, thus the total number of households as an integer. In addition we will also determine the percentage coverage, this helps to access the efficiency of the solution we are providing. 
+
+```python
+# Print results
+obj_val = int(mclp.problem.objective.value())
+obj_perc = mclp.perc_cov
+
+#Evaluated the results 
+print(
+    f"Of the {len(households_coords)} households, {obj_val} have access to at least 1 "
+    f"grocery store within a {SERVICE_RADIUS // 60}-minute walk. This is {obj_perc:.1%} coverage."
+)
+
+````
+If every works well you termina should print: ****Of the 200 households, 173 have access to at least 1 grocery store within a 5-minute walk. This is 8650.0% coverage****
+
+
