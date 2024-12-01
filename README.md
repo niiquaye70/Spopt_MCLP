@@ -68,7 +68,7 @@ The original documentation used json file, but in this tutorial I used a shapefi
 
 ```python
 # Load areas of interest (shapefile)
-pf_region = "C:/GUS5031/pf_region.shp"
+pf_region = "C://pf_region.shp"
 
 #read as as Geodataframe(gdf)
 gdf = gpd.read_file(pf_region)
