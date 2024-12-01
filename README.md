@@ -57,7 +57,7 @@ from shapely.geometry import shape, Point
 import spopt
 import numpy as np
 import matplotlib.pyplot as plt
-
+from spopt.locate import MCLP
 ```` 
 
 
@@ -214,3 +214,43 @@ for i, coord in enumerate(grocery_coords):
 m.save("households_and_groceries_map_with_icons.html")
 m
 ````
+### 3.4 Comput Distance Matrix 
+Merges the lists of household coordinates (households_coords) and grocery store coordinates (grocery_coords) into a single list.
+This unified list is essential for calculating distances or travel times between all households and grocery stores.
+#### 3.4.1 Combine all Locations (Demand and Facility Location)
+```python
+# Combine all locations (households + grocery stores)
+all_locations = households_coords + grocery_coords
+````
+### 3.4.2 Prepare sources and Destinations 
+Routing tools require source and destinations indices to compute the distance or travel time matrix. We will create indices or list  that corresponds to the len of the sources and destinations respectively. This separation allows efficient computation between households (sources) and grocery stores (destinations).By defining source_indices and target_indices, the code ensures households (demand points) and grocery stores (potential facilities) are clearly distinguished within the unified list.
+```python
+# Define indices for sources (households) and destinations (grocery stores)
+source_indices = list(range(len(households_coords)))  # Indices of households
+target_indices = list(range(len(households_coords), len(all_locations)))  # Indices of grocery stores
+````
+#### 3.4.3 Compute distanace matrix for walking
+We will now  initializes the OSRM client and uses it to compute the distance matrix (travel times in seconds) between households and grocery stores because we are considering walkability. 
+```python
+# Initialize the OSRM client
+client = OSRM(base_url="https://router.project-osrm.org")
+
+# Compute the distance matrix (travel times in seconds)
+osrm_routing_matrix = client.matrix(
+    locations=all_locations,
+    sources=source_indices,
+    destinations=target_indices,
+    profile="pedestrian"  # Use pedestrian mode for walking distances
+)
+
+````
+
+```python
+# Extract durations and convert to a NumPy array
+cost_matrix = np.array(osrm_routing_matrix.durations)
+print(cost_matrix)
+# Check the dimensions of the matrix
+# (Number of households, Number of grocery stores)
+print("Cost matrix shape:", cost_matrix.shape)  
+````
+***We used a 2D numpy array to hold the values of travel time for each household. there are 200 households and 13 grocery stores, the matrix will be of shape (200, 10)***
