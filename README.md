@@ -165,10 +165,12 @@ grocery_df = pd.read_csv("C:/GUS5031/Restaurant/grocery_store.csv")
 # Ensure the latitude and longitude columns are present
 print(grocery_df.head())
 ````
-![Structure of grocery stores]()
-#### 3.3.2 
+![Structure of grocery stores](https://github.com/niiquaye70/Spopt_MCLP/blob/main/facility_head.png)
 
+#### 3.3.2 Convert the Data frame into a Geodataframe
+Here, this code converts the grocery store data from a Pandas DataFrame into a GeoDataFrame for spatial analysis and checks its coordinate reference system (CRS).
 ```python
+# Create a GeoDataFrame with the projected CRS (e.g., EPSG:2272)
 groceries_gdf = gpd.GeoDataFrame(
     grocery_df,
     geometry=gpd.points_from_xy(grocery_df['POINT_X'], grocery_df['POINT_Y']),
@@ -177,4 +179,20 @@ groceries_gdf = gpd.GeoDataFrame(
 
 # Check the CRS
 print("Original CRS:", groceries_gdf.crs)
+````
+#### 3.3.3 Reproject Into Geographic  CRS
+Re-projects the data from its original projected CRS (e.g., EPSG:2272) to the geographic CRS EPSG:4326, commonly used for latitude and longitude. Geographic CRS is required for mapping tools like Folium. 
+
+```python
+# Re-project to geographic CRS (EPSG:4326)
+groceries_gdf = groceries_gdf.to_crs("EPSG:4326")
+print("Re-projected CRS:", groceries_gdf.crs)
+print(groceries_gdf.head())
+````
+#### 3.3.4 Extract Coordinates for plotting
+This step extracts the latitude and longitude coordinates of grocery store locations from the GeoDataFrame for use in mapping and analysis. Using the geometry.map function, each geometric point is converted into a list of ***[longitude, latitude]*** pairs. These coordinates are stored in the grocery_coords variable as a simple list, making it easier to integrate with mapping tools like Folium. Finally, the first few coordinates are printed to verify the conversion process and ensure the data is correctly formatted
+```python
+# Extract grocery coordinates as latitude and longitude
+grocery_coords = groceries_gdf.geometry.map(lambda pt: [pt.x, pt.y]).to_list()
+print("First few grocery coordinates:", grocery_coords[:5])
 ````
