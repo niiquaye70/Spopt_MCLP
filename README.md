@@ -292,4 +292,72 @@ print(
 ````
 If every works well you termina should print: ****Of the 200 households, 173 have access to at least 1 grocery store within a 5-minute walk. This is 8650.0% coverage****
 
+### 4. 0 Visualisation 
+Create feature groups in Folium map for presentation 
+```python
+# Create feature groups for sited grocery stores and allocated households
+sited_groceries_fg = folium.FeatureGroup("Sited Grocery Stores").add_to(m)
+allocated_households_fg = folium.FeatureGroup("Allocated Households").add_to(m)
+````
+Initiaze a list of colors 
 
+# Use distinct colors for visualization
+colors = ["darkcyan", "saddlebrown", "coral", "gold", "purple", "blue", "lime", "orange", "pink"]
+
+````
+
+#### Adding model results to folium
+Here we visualizes the sited grocery stores and the households they serve on the Folium map by adding markers for each grocery store and circle markers for allocated households.
+The code performs an iteration on the range of coordinates in the "grocery_coords" varaible, the mclp.fac2cli is an attribute of the MCLP that represent the assiggnment of the households to the sited stores.
+```python
+
+for i in range(len(grocery_coords)):
+    if mclp.fac2cli[i]:  # Check if the grocery was selected
+        folium.Marker(
+            location=[grocery_coords[i][1], grocery_coords[i][0]],
+            icon=folium.Icon(
+                icon="shopping-cart",
+                prefix="fa",
+                color="red"
+            ),
+            popup=f"Sited Grocery {i}"
+        ).add_to(sited_groceries_fg)
+
+        for j in mclp.fac2cli[i]:  # Allocated households
+            folium.CircleMarker(
+                location=[households_coords[j][1], households_coords[j][0]],
+                radius=10,
+                fill=True,
+                color=colors[i % len(colors)]
+            ).add_to(allocated_households_fg)
+# Add a layer control and save the map
+folium.LayerControl().add_to(m)
+````
+### Save and Visualize
+```python
+m.save("final_solution_map.html")
+````
+
+## Exercise 
+A city planner wants to identify the optimal locations for two ***Bus shelters*** to maximize the number of ***parks and recreation area*** that can access them within a 10-minute drive. Using real-world travel times from OSRM (using the "car" profile), the goal is to ensure the most equitable access for households while minimizing driving time.
+##### Instructions 
+1. **Download the following data set: Bus shelters, parks and recreation and the region of interest**
+2. **Load and Visualize the Data**:
+  - Load the region of interest shapefile.
+  - Load the parks and recreation dataset as a GeoDataFrame.
+  - Load the bus shelters dataset as a GeoDataFrame
+3. **Prepare Data**
+  - Re-project datasets to a geographic CRS (e.g., EPSG:4326) if necessary.
+  - Combine coordinates for parks (sources) and bus shelters (destinations)
+4. **Set matrix profile to "car"**
+5.**Solve the MCLP** 
+  - Set the service radius to 600 seconds (10-minute drive)
+  - Optimize the placement of two bus shelters
+  - Create your own list of colors
+  - Print the outcome of the model using the objective value and coverage percentage
+
+## Reference
+Timothy Ellersiek, James Gaboardi() Siting Restaurants with MCLP in San Francisco
+RM Assunção, MC Neves, G Câmara, and C da Costa Freitas. Efficient regionalization techniques for socio-economic geographical units using minimum spanning trees. International Journal of Geographical Information Science, 20(7):797–811, 2006. doi:10.1080/13658810600665111.
+Richard L. Church and Alan T. Murray. Business Site Selection, Locational Analysis, and GIS. John Wiley & Sons, Inc., Hoboken, 2009.
+OpenDataPhily, https://opendataphilly.org/datasets/neighborhood-food-retail/
