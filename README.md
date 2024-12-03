@@ -2,6 +2,183 @@
 ## Data Prep 
 **Download** the zipped file on the main branch, titled "SPOPT_DATA.ZIP" 
 
+# Max-P Regionalization
+
+## Abstract Explanation
+**MAX-P** is a clustering algorithm which clusters pre-defined geographic areas (in our case, census tracts) 
+
+**Threshold** 
+-The Max-P Threshold is a minumum threshold of a certain attribute that each group must meet
+IE: if population is the variable, and threshold is at 500, it will regionalize so that every region has an poulation at least 500 people
+-In our case, we can take advantage of this to make sure each grouping of census tracts as at least 40 tracts 
+
+**Attribute** 
+-We can select one attribute which we want to *homogenous* within each group (that is say, the lowest possible variance given the maximum/threshold constraints). 
+-In our case, it will be income
+
+**Maximum**
+-The algorithm will attempt to create the maximum number of spatial units given the threshold, attribute and queen weight. This is becasaue the more spatial units we have, the more homogenity we have as well, giving us a clearer picture of our data. 
+
+## Implementation 
+
+### Step 1: Load Libraries 
+import geopandas as gpd
+import libpysal
+from spopt.region import MaxPHeuristic
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy
+
+### Step 2: Initialize random seed to randomize intial cluster assignments
+random_seed = 123456
+
+### Step 3: Load + Clean + Project shapefile 
+shapefile_path = "SPOPT_DATA_JOINED.shp"
+gdf = gpd.read_file(shapefile_path)
+gdf["spopt_v244"] = pd.to_numeric(gdf["spopt_v244"], errors="coerce")
+gdf["spopt_v244"] = gdf["spopt_v244"].fillna(gdf["spopt_v244"].median())
+gdf = gdf.to_crs("EPSG:2272")
+
+### Step 4: Create a spatial weights matrix using Queen contiguity
+w = libpysal.weights.Queen.from_dataframe(gdf)
+
+### Step 5: Define parameters for Max-P 
+attrs_name = ["spopt_v244"] #attribute we want to be homogenous, in this case income inequality
+gdf["count"] = 1 # assings a count of 1 to each census tract
+threshold_name = "count" # points algorithm to count for threshold attribute
+threshold = 40  # sets threshold to 40 "counts" per region (each census tract is one count, so effectively 40 tracts)
+top_n = 10 # controls how many tracts are evaluated at each step. When selecting this, you are balancing computational cost and accuracy (however, only top candidates are included in the top_n)
+
+### Step 6: Implement random seed to randomize intial cluster assignments
+np.random.seed(random_seed)
+
+### Step 7: initialize and solve the model
+model = MaxPHeuristic(gdf, w, attrs_name, threshold_name, threshold, top_n)
+model.solve()
+
+### Step 8: Assign the region labels back to the shapefile
+gdf["region"] = model.labels_
+
+### Step 9 (optional): Print histogram showing distribution of tracts
+plt.figure(figsize=(10, 6))
+gdf["region"].value_counts().sort_index().plot(kind="bar", color="skyblue", edgecolor="black")
+plt.xlabel("Region Label")
+plt.ylabel("Number of Census Tracts")
+plt.title("Distribution of Census Tracts Across Resulting Clusters")
+plt.xticks(rotation=45)
+plt.grid(axis="y")
+plt.savefig("cluster_histogram.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+### Step 10: Visualize resulting regions
+gdf.plot(column="region", legend=True, cmap="Set3", edgecolor="black")
+plt.title("Max-P Clustering of Census Tracts by Income per Capita")
+plt.savefig("maxp_map.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+### Step 11: Print a table w/ income per capita in each region
+cluster_summary = gdf.groupby("region").agg(
+    average_income_per_capita=("spopt_v244", "mean"),
+    number_of_census_tracts=("region", "count")
+).reset_index()
+cluster_summary.columns = ["Region", "Average Income per Capita", "Number of Census Tracts"]
+print(cluster_summary)
+
+### Step 12 (optional): Create a shapefile of the poorest region
+poorest_region_label = cluster_summary.loc[cluster_summary["Average Income per Capita"].idxmin(), "Region"]
+poorest_region_gdf = gdf[gdf["region"] == poorest_region_label]
+output_shapefile_path = "poorest.shp"
+poorest_region_gdf.to_file(output_shapefile_path)
+
+# Skater Regionalization Algortihm
+
+## Explanation Part One - Tree Theory 
+
+### Tree Data Structure 
+
+* A disadvantage of arrays/linked lists is their linear nature, meaning that in order to find an item we must search through each preceding item. This is computationally and temporally inefficient.
+* Instead, we can use a “tree structure”. This is a series of nodes (leaves) connected by edges (branches).
+* Every node is connected to the root direction by exactly one edge, moving parent to child. A parent can have multiple children, but child can only have one parent.
+
+### Spanning Trees
+* A minimum spanning tree structure is a tree network which connects all nodes within the network, without any circuits/loops (for efficiency)
+* So within the ST network, there exists a path from any other one node to any other node, but there are no loops.
+* A “minimum cost spanning tree” is a spanning tree network which has been optimized such that all nodes are connected, without loops, and using the minimum number of edges possible.
+* A MCST can be further optimized - sometimes we don’t need all our nodes to be connected (this is highly dependent on your application of the MCST), so we can remove edges and therefore connections. This process is called “pruning” and forms the basis for the SKATER algorithm.
+
+## Abstract Explanation Part Two - SKATER
+* The Skater Algorithm starts with a contiguous MCST
+* This tree represents a continous geographic phenomena, however in our case the data will be “psuedo-continuous”, because we are working with census tract data. That is to say even if we are working with polygons, it can be thought of as VERY low resolution, unpartitioned raster data.
+* When we implement SKATER, the MCST will now be “pruned”, by removing edges (connections) which link disimilar regions (census tracts)
+* This is iteratively carried out, and eventually we are left with different groups of linked regions, which form the regions of the SKATER outputs.
+**Important Model Parameters**
+*attrs_name* - The attribute which we want to be homogenous within regions
+*n_clusters* - The overall number of contiguous regions we want after pruning
+*floor* - minimum number of spatial objects in each region
+
+## Implementation 
+
+### Step 1: Load Libaries
+import geopandas as gpd
+import pandas as pd
+import libpysal
+import matplotlib.pyplot as plt
+import numpy
+import pandas
+import shapely
+from sklearn.metrics import pairwise as skm
+import spopt
+import warnings
+
+### Step 2: Load + Clean + Project Data
+shapefile_path = “SPOPT_DATA_JOINED.shp”
+gdf = gpd.read_file(shapefile_path)
+gdf[“spopt_v244”] = pd.to_numeric(gdf[“spopt_v244”], errors=“coerce”)
+gdf[“spopt_v244”] = gdf[“spopt_v244”].fillna(gdf[“spopt_v244”].median())
+print(gdf.crs)
+gdf = gdf.to_crs(“EPSG:2272”)
+
+### Step 3: Define parameters
+attrs_name = [“spopt_v244”] # variable we are using to regionalize
+w = libpysal.weights.Queen.from_dataframe(gdf) # create spatial weights object from shp
+n_clusters = 12 # number of contigous regions we want
+floor = 1 # minimum number of spatial objects in each region
+trace = False # wether or not we store intermediate values
+islands = “increase” # adds “islands” to existing regions, rather than making them their own
+
+### Step 4: create minimum cost spanning forest (MCST)
+spanning_forest_kwds = dict(
+dissimilarity=skm.manhattan_distances,
+affinity=None,
+reduction=numpy.sum,
+center=numpy.mean,
+verbose=2
+)
+
+### Step 5: Solve the model
+model = spopt.region.Skater(
+gdf,
+w,
+attrs_name,
+n_clusters=n_clusters,
+floor=floor,
+trace=trace,
+islands=islands,
+spanning_forest_kwds=spanning_forest_kwds
+)
+model.solve()
+
+### Step 6: Add to data frame
+gdf[“demo_regions”] = model.labels_
+
+### Step 7: Visualize
+gdf[“region”] = model.labels_ # Assign the cluster labels to the GeoDataFrame
+gdf.plot(column=“region”, categorical=True, legend=True, figsize=(10, 6))
+plt.title(“Skater Clustering with Islands as Separate Regions”)
+plt.show()
+
+
 # Spopt_Maximal Covering Location Problem (MCLP)
 ## Siting Convenient Stores for Low-Income Communities
 ## Project Description
