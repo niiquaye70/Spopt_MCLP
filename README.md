@@ -1,3 +1,6 @@
+# To Begin 
+## Data Prep 
+**Download** the zipped file on the main branch, titled "SPOPT_DATA.ZIP" 
 
 # Spopt_Maximal Covering Location Problem (MCLP)
 ## Siting Convenient Stores for Low-Income Communities
