@@ -1,6 +1,9 @@
 # To Begin 
-## Data Prep 
+### Data Prep 
 **Download** the zipped file on the main branch, titled "SPOPT_DATA.ZIP" 
+
+### Code Prep
+**Download** the zipped file on the main branch, titled "SPOPT_CODE.ZIP"
 
 # Max-P Regionalization
 
