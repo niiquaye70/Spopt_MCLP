@@ -25,6 +25,7 @@ IE: if population is the variable, and threshold is at 500, it will regionalize 
 ## Implementation 
 
 ### Step 1: Load Libraries 
+```python
 import geopandas as gpd
 import libpysal
 from spopt.region import MaxPHeuristic
@@ -32,11 +33,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy
+````
 
 ### Step 2: Initialize random seed to randomize intial cluster assignments
+```python
 random_seed = 123456
+````
 
-### Step 3: Load + Clean + Project shapefile 
+### Step 3: Load + Clean + Project shapefile
+```python
 shapefile_path = "SPOPT_DATA_JOINED.shp"
 gdf = gpd.read_file(shapefile_path)
 gdf["spopt_v244"] = pd.to_numeric(gdf["spopt_v244"], errors="coerce")
@@ -45,7 +50,7 @@ gdf = gdf.to_crs("EPSG:2272")
 
 ### Step 4: Create a spatial weights matrix using Queen contiguity
 w = libpysal.weights.Queen.from_dataframe(gdf)
-
+```python
 ### Step 5: Define parameters for Max-P 
 attrs_name = ["spopt_v244"] #attribute we want to be homogenous, in this case income inequality
 gdf["count"] = 1 # assings a count of 1 to each census tract
@@ -53,17 +58,26 @@ threshold_name = "count" # points algorithm to count for threshold attribute
 threshold = 40  # sets threshold to 40 "counts" per region (each census tract is one count, so effectively 40 tracts)
 top_n = 10 # controls how many tracts are evaluated at each step. When selecting this, you are balancing computational cost and accuracy (however, only top candidates are included in the top_n)
 
+
 ### Step 6: Implement random seed to randomize intial cluster assignments
+```python
 np.random.seed(random_seed)
+````
 
 ### Step 7: initialize and solve the model
+```python
 model = MaxPHeuristic(gdf, w, attrs_name, threshold_name, threshold, top_n)
 model.solve()
+````
+
 
 ### Step 8: Assign the region labels back to the shapefile
+```python
 gdf["region"] = model.labels_
+````
 
 ### Step 9 (optional): Print histogram showing distribution of tracts
+```python
 plt.figure(figsize=(10, 6))
 gdf["region"].value_counts().sort_index().plot(kind="bar", color="skyblue", edgecolor="black")
 plt.xlabel("Region Label")
@@ -73,27 +87,33 @@ plt.xticks(rotation=45)
 plt.grid(axis="y")
 plt.savefig("cluster_histogram.png", dpi=300, bbox_inches="tight")
 plt.show()
+````
 
 ### Step 10: Visualize resulting regions
+```python
 gdf.plot(column="region", legend=True, cmap="Set3", edgecolor="black")
 plt.title("Max-P Clustering of Census Tracts by Income per Capita")
 plt.savefig("maxp_map.png", dpi=300, bbox_inches="tight")
 plt.show()
+````
 
 ### Step 11: Print a table w/ income per capita in each region
+```python
 cluster_summary = gdf.groupby("region").agg(
     average_income_per_capita=("spopt_v244", "mean"),
     number_of_census_tracts=("region", "count")
 ).reset_index()
 cluster_summary.columns = ["Region", "Average Income per Capita", "Number of Census Tracts"]
 print(cluster_summary)
+````
 
 ### Step 12 (optional): Create a shapefile of the poorest region
+```python
 poorest_region_label = cluster_summary.loc[cluster_summary["Average Income per Capita"].idxmin(), "Region"]
 poorest_region_gdf = gdf[gdf["region"] == poorest_region_label]
 output_shapefile_path = "poorest.shp"
 poorest_region_gdf.to_file(output_shapefile_path)
-
+````
 # Skater Regionalization Algortihm
 
 ## Explanation Part One - Tree Theory 
@@ -123,6 +143,7 @@ poorest_region_gdf.to_file(output_shapefile_path)
 ## Implementation 
 
 ### Step 1: Load Libaries
+```python
 import geopandas as gpd
 import pandas as pd
 import libpysal
@@ -133,24 +154,29 @@ import shapely
 from sklearn.metrics import pairwise as skm
 import spopt
 import warnings
-
+````
 ### Step 2: Load + Clean + Project Data
+
+```python
 shapefile_path = “SPOPT_DATA_JOINED.shp”
 gdf = gpd.read_file(shapefile_path)
 gdf[“spopt_v244”] = pd.to_numeric(gdf[“spopt_v244”], errors=“coerce”)
 gdf[“spopt_v244”] = gdf[“spopt_v244”].fillna(gdf[“spopt_v244”].median())
 print(gdf.crs)
 gdf = gdf.to_crs(“EPSG:2272”)
+````
 
 ### Step 3: Define parameters
+```python
 attrs_name = [“spopt_v244”] # variable we are using to regionalize
 w = libpysal.weights.Queen.from_dataframe(gdf) # create spatial weights object from shp
 n_clusters = 12 # number of contigous regions we want
 floor = 1 # minimum number of spatial objects in each region
 trace = False # wether or not we store intermediate values
 islands = “increase” # adds “islands” to existing regions, rather than making them their own
-
+````
 ### Step 4: create minimum cost spanning forest (MCST)
+```python
 spanning_forest_kwds = dict(
 dissimilarity=skm.manhattan_distances,
 affinity=None,
@@ -158,8 +184,9 @@ reduction=numpy.sum,
 center=numpy.mean,
 verbose=2
 )
-
+````
 ### Step 5: Solve the model
+```python
 model = spopt.region.Skater(
 gdf,
 w,
@@ -171,16 +198,18 @@ islands=islands,
 spanning_forest_kwds=spanning_forest_kwds
 )
 model.solve()
-
+````
 ### Step 6: Add to data frame
+```python
 gdf[“demo_regions”] = model.labels_
-
+````
 ### Step 7: Visualize
+```python
 gdf[“region”] = model.labels_ # Assign the cluster labels to the GeoDataFrame
 gdf.plot(column=“region”, categorical=True, legend=True, figsize=(10, 6))
 plt.title(“Skater Clustering with Islands as Separate Regions”)
 plt.show()
-
+````
 
 # Spopt_Maximal Covering Location Problem (MCLP)
 ## Siting Convenient Stores for Low-Income Communities
@@ -211,7 +240,7 @@ Imagine being tasked by a city engineer to strategically choose three grocery st
 
 ### Workflow
 #### Prerequitise
-***Intall these libraries in your local python environment before running this script using "pip"
+***Intall these libraries in your local python environment if tou hva not, see the instructions in the "pre-instruction file before running this script using "pip" when necessary. 
 ***
 pulp     : 2.8.0
 spopt    : 0.5.1.dev59+g343ef27
@@ -241,7 +270,7 @@ import spopt
 import numpy as np
 import matplotlib.pyplot as plt
 from spopt.locate import MCLP
-```` 
+````
 
 
 ### 2.0 Load shapefile of the region of interest
