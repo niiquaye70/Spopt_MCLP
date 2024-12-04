@@ -549,7 +549,7 @@ folium.LayerControl().add_to(m)
 ```python
 m.save("final_solution_map.html")
 ````
-![Solution Map]()
+![Solution Map](https://github.com/niiquaye70/Spopt_MCLP/blob/main/Solution_map.png)
 
 ## Exercise 
 A city planner wants to identify the optimal locations for two ***Bus shelters*** to maximize the number of ***parks and recreation area*** that can access them within a 10-minute drive. Using real-world travel times from OSRM (using the "car" profile), the goal is to ensure the most equitable access for households while minimizing driving time.
