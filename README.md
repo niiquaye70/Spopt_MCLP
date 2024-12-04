@@ -514,15 +514,14 @@ allocated_households_fg = folium.FeatureGroup("Allocated Households").add_to(m)
 Initiaze a list of colors 
 
 # Use distinct colors for visualization
+```python
 colors = ["darkcyan", "saddlebrown", "coral", "gold", "purple", "blue", "lime", "orange", "pink"]
-
 ````
-
-#### Adding model results to folium
+###  Adding model results to folium
 Here we visualizes the sited grocery stores and the households they serve on the Folium map by adding markers for each grocery store and circle markers for allocated households.
 The code performs an iteration on the range of coordinates in the "grocery_coords" varaible, the mclp.fac2cli is an attribute of the MCLP that represent the assiggnment of the households to the sited stores.
-```python
 
+```python
 for i in range(len(grocery_coords)):
     if mclp.fac2cli[i]:  # Check if the grocery was selected
         folium.Marker(
