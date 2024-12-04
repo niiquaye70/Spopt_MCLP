@@ -250,7 +250,7 @@ folium   : 0.18.0
 geopandas: 1.0.1
 numpy    : 1.26.2
  
-### 1.0 Importing Necessary Packages
+### 1.0 Importing Necessary Packages and setting workshpace
 
 ## Importing Necessary Packages
 
@@ -271,8 +271,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from spopt.locate import MCLP
 ````
-
-
+#### set workspace 
+```python
+workspace = os.getcwd()
+````
 ### 2.0 Load shapefile of the region of interest
 The original documentation used json file, but in this tutorial I used a shapefile, based on the results with a regional analysis performed with *******.
 
@@ -280,7 +282,7 @@ The original documentation used json file, but in this tutorial I used a shapefi
 
 ```python
 # Load areas of interest (shapefile)
-pf_region = "C://pf_region.shp"
+pf_region = "pf_region.shp"
 
 #read as as Geodataframe(gdf)
 gdf = gpd.read_file(pf_region)
@@ -372,7 +374,7 @@ We are going to add the facility locations, in this case we used a csv with some
 This code loads a CSV file containing grocery store data and checks its structure to ensure the latitude and longitude columns are presen and are in the correct format for the model. 
 ```python
 # Load the CSV file
-grocery_df = pd.read_csv("C:/GUS5031/Restaurant/grocery_store.csv")
+grocery_df = pd.read_csv("grocery_store.csv")
 
 # Ensure the latitude and longitude columns are present
 print(grocery_df.head())
