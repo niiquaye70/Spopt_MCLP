@@ -56,7 +56,8 @@ attrs_name = ["spopt_v244"] #attribute we want to be homogenous, in this case in
 gdf["count"] = 1 # assings a count of 1 to each census tract
 threshold_name = "count" # points algorithm to count for threshold attribute
 threshold = 40  # sets threshold to 40 "counts" per region (each census tract is one count, so effectively 40 tracts)
-top_n = 10 # controls how many tracts are evaluated at each step. When selecting this, you are balancing computational cost and accuracy (however, only top candidates are included in the top_n)
+top_n = 10 # controls how many tracts are evaluated at each step.
+ When selecting this, you are balancing computational cost and accuracy (however, only top candidates are included in the top_n)
 
 
 ### Step 6: Implement random seed to randomize intial cluster assignments
@@ -120,9 +121,11 @@ poorest_region_gdf.to_file(output_shapefile_path)
 
 ### Tree Data Structure 
 
-* A disadvantage of arrays/linked lists is their linear nature, meaning that in order to find an item we must search through each preceding item. This is computationally and temporally inefficient.
+* A disadvantage of arrays/linked lists is their linear nature, meaning that in order to find an item we must search through each preceding item.
+*  This is computationally and temporally inefficient.
 * Instead, we can use a “tree structure”. This is a series of nodes (leaves) connected by edges (branches).
-* Every node is connected to the root direction by exactly one edge, moving parent to child. A parent can have multiple children, but child can only have one parent.
+* Every node is connected to the root direction by exactly one edge, moving parent to child.
+* A parent can have multiple children, but child can only have one parent.
 
 ### Spanning Trees
 * A minimum spanning tree structure is a tree network which connects all nodes within the network, without any circuits/loops (for efficiency)
