@@ -47,7 +47,7 @@ gdf = gpd.read_file(shapefile_path)
 gdf["spopt_v244"] = pd.to_numeric(gdf["spopt_v244"], errors="coerce")
 gdf["spopt_v244"] = gdf["spopt_v244"].fillna(gdf["spopt_v244"].median())
 gdf = gdf.to_crs("EPSG:2272")
-
+````
 ### Step 4: Create a spatial weights matrix using Queen contiguity
 w = libpysal.weights.Queen.from_dataframe(gdf)
 ```python
@@ -58,7 +58,7 @@ threshold_name = "count" # points algorithm to count for threshold attribute
 threshold = 40  # sets threshold to 40 "counts" per region (each census tract is one count, so effectively 40 tracts)
 top_n = 10 # controls how many tracts are evaluated at each step.
  When selecting this, you are balancing computational cost and accuracy (however, only top candidates are included in the top_n)
-
+````
 
 ### Step 6: Implement random seed to randomize intial cluster assignments
 ```python
