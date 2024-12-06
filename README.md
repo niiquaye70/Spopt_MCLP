@@ -49,6 +49,7 @@ gdf["spopt_v244"] = gdf["spopt_v244"].fillna(gdf["spopt_v244"].median())
 gdf = gdf.to_crs("EPSG:2272")
 ````
 ### Step 4: Create a spatial weights matrix using Queen contiguity
+```python
 w = libpysal.weights.Queen.from_dataframe(gdf)
 ````
 
