@@ -50,8 +50,11 @@ gdf = gdf.to_crs("EPSG:2272")
 ````
 ### Step 4: Create a spatial weights matrix using Queen contiguity
 w = libpysal.weights.Queen.from_dataframe(gdf)
+````
+
+### Step 5: Define parameters for Max-P
+
 ```python
-### Step 5: Define parameters for Max-P 
 attrs_name = ["spopt_v244"] #attribute we want to be homogenous, in this case income inequality
 gdf["count"] = 1 # assings a count of 1 to each census tract
 threshold_name = "count" # points algorithm to count for threshold attribute
